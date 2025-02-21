@@ -1,6 +1,10 @@
 package jwt
 
-import "github.com/golang-jwt/jwt/v5"
+import (
+	"errors"
+	"github.com/golang-jwt/jwt/v5"
+	errors2 "github.com/prolgrammer/BM_package/errors"
+)
 
 type tokenService struct {
 	signSecretToken []byte
@@ -29,6 +33,19 @@ func (t tokenService) Create(claims map[string]interface{}) (string, error) {
 }
 
 func (t tokenService) Parse(token string) (map[string]interface{}, error) {
-	//TODO implement me
-	panic("implement me")
+	claims := jwt.MapClaims{}
+	parsed, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		return t.signSecretToken, nil
+	})
+
+	if err != nil {
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			return nil, errors2.ErrExpired
+		}
+		return nil, errors.Join(errors2.ErrInvalid, err)
+	}
+
+	claims = parsed.Claims.(jwt.MapClaims)
+
+	return claims, err
 }
