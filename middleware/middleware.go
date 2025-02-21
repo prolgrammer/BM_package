@@ -14,6 +14,8 @@ type Middleware interface {
 	Authenticate(c *gin.Context)
 }
 
-func NewMiddleware() Middleware {
-	return &middleware{}
+func NewMiddleware(signSecretToken string) Middleware {
+	return &middleware{
+		manager: jwt.NewTokenService(signSecretToken),
+	}
 }
